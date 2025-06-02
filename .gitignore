@@ -1,0 +1,9 @@
+./node_modules
+./.git
+./.vscode
+./.idea
+.next
+node_modules
+package-lock.json
+yarn.lock
+out
