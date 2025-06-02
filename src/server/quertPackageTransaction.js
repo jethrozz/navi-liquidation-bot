@@ -25,7 +25,7 @@ export default async function queryPackageTransactionBlock() {
     const digestTxs = []; // 存储符合条件的sender
     do {
         //随机获取5-10秒
-        const randomDelay = Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000;
+        const randomDelay = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
         console.log('随机延迟:', randomDelay, '毫秒');
         await sleep(randomDelay); // 等待 2 秒
         const params = {
