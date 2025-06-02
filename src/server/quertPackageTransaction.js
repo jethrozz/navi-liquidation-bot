@@ -11,11 +11,12 @@ const api = axios.create({
 })
 export default async function queryPackageTransactionBlock() {
     let digestRow = await getLatestProcessDigest();
+    let nextPageCursor = null;
     if(digestRow.length>0){
         console.log('digestRow',digestRow);
-        return;
+        nextPageCursor = digestRow[0].digest;
     }
-    let nextPageCursor = null;
+    
     const digestTxs = []; // 存储符合条件的sender
     do {
         const params = {
