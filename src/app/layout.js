@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import queryPackageTransactionBlock from '../server/quertPackageTransaction';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,12 +17,6 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-        // 由于 await 只能在异步函数中使用，因此将 useEffect 回调函数改为异步函数
-        queryPackageTransactionBlock().then(() => {
-          // 可在此处添加查询成功后的处理逻辑
-        }).catch((error) => {
-          console.error('查询包交易块时出错:', error);
-        });
   return (
     <html lang="en">
       <body
