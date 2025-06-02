@@ -9,6 +9,11 @@ const api = axios.create({
         'Origin':'https://internal.suivision.xyz'
     }
 })
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export default async function queryPackageTransactionBlock() {
     let digestRow = await getLatestProcessDigest();
     let nextPageCursor = null;
@@ -19,6 +24,10 @@ export default async function queryPackageTransactionBlock() {
     
     const digestTxs = []; // 存储符合条件的sender
     do {
+        //随机获取5-10秒
+        const randomDelay = Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000;
+        console.log('随机延迟:', randomDelay, '毫秒');
+        await sleep(randomDelay); // 等待 2 秒
         const params = {
             "jsonrpc": "2.0",
             "id": 93,
