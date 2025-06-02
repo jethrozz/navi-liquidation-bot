@@ -1,4 +1,4 @@
-import connectDB from '../util/MysqlUtil';
+import pool from '../util/MysqlUtil';
 /**
  * 分页查询用户数据
  * @param {number} page - 页码（从1开始）
@@ -10,12 +10,12 @@ export async function getUsersWithPagination(page = 1, pageSize = 10) {
     const offset = (page - 1) * pageSize;
     
     // 查询总记录数
-    const [totalResult] = await connectDB.query(
+    const [totalResult] = await pool.query(
       'SELECT COUNT(*) AS total FROM navi_deposit_user'
     );
     
     // 查询分页数据
-    const [rows] = await connectDB.query(
+    const [rows] = await pool.query(
       'SELECT * FROM navi_deposit_user LIMIT ? OFFSET ?',
       [pageSize, offset]
     );
@@ -32,7 +32,7 @@ export async function getUsersWithPagination(page = 1, pageSize = 10) {
  * @returns {Promise<object>} 插入结果
  */
 export async function createUser(address) {
-  const [result] = await connectDB.query(
+  const [result] = await pool.query(
     'INSERT INTO navi_deposit_user (address) VALUES (?)',
     [address]
   );
@@ -48,20 +48,27 @@ export async function createUsers(addresses) {
   // 构建批量插入的值数组
   const values = addresses.map(address => [address]);
   
-  const [result] = await connectDB.query(
+  const [result] = await pool.query(
     'INSERT INTO navi_deposit_user (address) VALUES ?',
     [values]
   );
   return result;
 }
 
+
+export async function getLatestProcessDigest() {
+    const [rows] = await pool.query(
+      'SELECT * FROM navi_transaction_digest order by id desc LIMIT 1'
+    );
+    return rows;
+  }
 /**
  * 查询digest是否存在
  * @param {string} digest - 交易摘要
  * @returns {Promise<boolean>} 是否存在
  */
 export async function digestExists(digest) {
-    const [rows] = await connectDB.query(
+    const [rows] = await pool.query(
       'SELECT 1 FROM navi_transaction_digest WHERE digest = ? LIMIT 1', 
       [digest]
     );
@@ -74,7 +81,7 @@ export async function digestExists(digest) {
    * @returns {Promise<object>} 插入结果
    */
   export async function createDigest(digest) {
-    const [result] = await connectDB.query(
+    const [result] = await pool.query(
       'INSERT INTO navi_transaction_digest (digest) VALUES (?)',
       [digest]
     );
@@ -90,7 +97,7 @@ export async function digestExists(digest) {
     // 构建批量插入的值数组
     const values = digests.map(digest => [digest]);
     
-    const [result] = await connectDB.query(
+    const [result] = await pool.query(
       'INSERT INTO navi_transaction_digest (digest) VALUES ?',
       [values]
     );

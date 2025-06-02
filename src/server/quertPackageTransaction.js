@@ -1,8 +1,22 @@
-import { api } from '../util/api';
+import axios from 'axios';
+import {createUser, getLatestProcessDigest, createDigest} from './db.js';
 
+const api = axios.create({
+    baseURL: 'https://internal.suivision.xyz',
+    timeout: 20000,
+    headers: {
+        'Content-Type': 'application/json',
+        'Origin':'https://internal.suivision.xyz'
+    }
+})
 export default async function queryPackageTransactionBlock() {
+    let digestRow = await getLatestProcessDigest();
+    if(digestRow.length>0){
+        console.log('digestRow',digestRow);
+        return;
+    }
     let nextPageCursor = null;
-    const senders = []; // 存储符合条件的sender
+    const digestTxs = []; // 存储符合条件的sender
     do {
         const params = {
             "jsonrpc": "2.0",
@@ -29,13 +43,11 @@ export default async function queryPackageTransactionBlock() {
         try {
             const response = await api.post('/mainnet/api', params);
             const { result } = response.data;
-
             if (!result || !result.data) continue;
-
             // 处理每笔交易
             for (const tx of result.data) {
+            
                 const transactions = tx.transaction?.data?.transaction?.transactions || [];
-
                 for (const action of transactions) {
                     if (action.MoveCall) {
                         const { package: pkg, module, function: func } = action.MoveCall;
@@ -44,10 +56,13 @@ export default async function queryPackageTransactionBlock() {
                         if (pkg === "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f" &&
                             module === "incentive_v3" &&
                             func === "entry_deposit") {
-
+                            //console.log('找到符合条件的交易:', tx.transaction?.data?.sender);
                             // 记录sender
                             if (tx.transaction?.data?.sender) {
-                                senders.push(tx.transaction.data.sender);
+                                digestTxs.push({
+                                    digest: tx.digest,
+                                    sender: tx.transaction?.data?.sender
+                                });
                             }
                             break; // 找到匹配后跳出当前交易循环
                         }
@@ -55,6 +70,20 @@ export default async function queryPackageTransactionBlock() {
                 }
             }
             // 更新下一页游标
+            for (const digestTx of digestTxs) {
+                console.log('找到符合条件的交易:', digestTx);
+                try{
+                    createUser(digestTx.sender);
+                }catch(error){
+                    console.error('数据库操作 createUser 失败:', error);
+                }
+
+                try{
+                    createDigest(digestTx.digest);
+                }catch(error){
+                    console.error('数据库操作 createDigest 失败:', error);
+                }
+            }
             nextPageCursor = result.hasNextPage ? result.nextCursor : null;
         } catch (error) {
             console.error('API请求失败:', error);

@@ -1,15 +1,13 @@
 import Image from "next/image";
-import { startScheduler } from '../server/scheduler';
-import { useEffect } from 'react';
+import queryPackageTransactionBlock from '../server/quertPackageTransaction';
 
 export default function Home() {
-  useEffect(() => {
-    // 仅在服务端环境启动定时任务
-    if (typeof window === 'undefined') {
-      startScheduler();
-    }
-  }, []);
-
+      // 由于 await 只能在异步函数中使用，因此将 useEffect 回调函数改为异步函数
+      queryPackageTransactionBlock().then(() => {
+        // 可在此处添加查询成功后的处理逻辑
+      }).catch((error) => {
+        console.error('查询包交易块时出错:', error);
+      });
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
