@@ -2,6 +2,7 @@
 ./.git
 ./.vscode
 ./.idea
+.env.*
 .next
 node_modules
 package-lock.json
